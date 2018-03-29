@@ -14,6 +14,12 @@ When time is due:
  2. Publish new receipts
  3. Send result with alert
 
+## Receipt
+
+Verify mecanism:
+ 1. Verify by calling smart contract
+ 2. If callback is non-null, append for batch transact
+
 ## Anchors system
 
  - [ ] Chainpoint2.X based
@@ -21,6 +27,7 @@ When time is due:
 
 ## Backends
 
+ - [ ] HTTP (OpenTimestamp)
  - [ ] Google Drive
 
 ## Delivrery system
