@@ -52,7 +52,7 @@ contract FakturVerifier {
 		// Register challenge
 		uint timeout = now + ChallengePeriod;
 		Receipts[targetHash].PayTo = msg.sender;
-		Receipts[targetHash].Amount = msg.value /* + calculate delta */;
+		Receipts[targetHash].Amount = msg.value /* + calculate delta for paid anchor */;
 		Receipts[targetHash].Timeout = timeout;
 		// Emit event w/ hash and timeout
 		emit Challenge(targetHash, timeout);
