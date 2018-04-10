@@ -1,6 +1,15 @@
 # Faktur
 
-A simple tool to record the existence and relay them to somewhere
+A simple tool to timestamp data and relay them to somewhere.
+
+Smart contract component.
+
+
+Donation:
+
+**BTC**: 1MYiMU3GfsgEP4EYHHonG9Fy6DkA1JC3B5
+
+**ETH**: 0xc8f8371BDd6FB64388F0D65F43A0040926Ee38be
 
 ## Description
 
@@ -16,9 +25,8 @@ When time is due:
 
 ## Receipt
 
-The pre-receipt emission open a challenge period based on the smart contract
-nounce.
-The client should check the nonce against smart contract
+The pre-receipt emission open a challenge period based on the Smart Contract SLA(TODO).
+The client should check the validity of the receipt (Smart Contract funcion)
 
 The pre-receipt can't be challenged for N period.
 
@@ -26,22 +34,27 @@ After N period, the pre-receipt if submitted on-chain can
 open a challenge for the oracle to prove that it timestamped the hash
 correctly.
 
-The oracle submit the receipt. TODO: make incentive
+To cancel the challenge the oracle submit the audit path on-chain, keeping the funds if provided.
 
-After N+X period, the pre-receipt won't be challengeable anymore.
+After N+X period, the pre-receipt won't be challengeable anymore and is put to removal.
 
-Verify mecanism:
- 1. Verify by calling smart contract
- 2. If callback is non-null, append for batch transact
+Verify by calling either VerifyRFC6962 or VerifyMerkleHash Smart Contract audit function.
 
-## Anchors system
+## Receipt producer
 
  - [ ] Chainpoint2.1 based
  - [ ] OpenTimestamps
+ - [ ] BlockReceipt
+ - [ ] Custom
+
+## Verification algorithm
+
+ - [x] [rfc6962](https://tools.ietf.org/html/rfc6962#section-2.1.1) "Certificate transparency"
+ - [x] [Merkle Tree](https://github.com/chainpoint/whitepaper/blob/master/chainpoint_white_paper.pdf) (Chainpoint 2.1, deprecated)
 
 ## Backends
 
- - [ ] HTTP (OpenTimestamp)
+ - [ ] POST HTTP
  - [ ] Google Drive
 
 ## Delivrery system
