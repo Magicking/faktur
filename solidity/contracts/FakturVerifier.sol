@@ -40,10 +40,25 @@ contract FakturVerifier {
 		
 	}
 
+	/*
+		@dev Generate a promise the Oracle should signed.
+		@param hash is the targetHash
+		@param timestamp should be the time limit of the promise
+	*/
 	function ProofID(bytes32 hash, uint timestamp) pure public returns (bytes32) {
 		return keccak256(hash, timestamp);
 	}
 
+	/*
+		@dev Open a challenge window for the oracle to submit the receipt
+			if no proof is submitted thourgh CancelChallenge, the amount sent
+			will be refund plus reimbursent (TODO)
+		@param targetHash, user generated hash
+		@param timestamp, promised timestamping limit
+		@param v, v part of the "personalSignature"
+		@param r, r part of the "personalSignature"
+		@param s, s part of the "personalSignature"
+	*/
 	function ChallengeReceipt(bytes32 targetHash, uint timestamp, uint8 v , bytes32 r , bytes32 s) public payable {
 		// Verify period validity
 		require(timestamp < now);
@@ -62,6 +77,24 @@ contract FakturVerifier {
 		emit Challenge(targetHash, timeout);
 	}
 
+	/*
+		@dev Reimburse non timestamped hash
+		@param targetHash, user generated hash
+	*/
+	function WithdrawChallenge(bytes32 targetHash) public {
+		require(Receipts[targetHash].Timeout >= now);
+		address payto = Receipts[targetHash].PayTo;
+		uint amount = Receipts[targetHash].Amount;
+		delete Receipts[targetHash];
+		payto.transfer(amount);
+	}
+
+	/*
+		@dev Cancel challenge by providing proof
+		@param leafPos, Proof position on Merkle Tree (true -> right, false -> left)
+		@param proofs, hash audit path
+		@param targetHash, user generated hash
+	*/
 	function CancelChallenge(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) onlyOwner public {
 		require(Receipts[targetHash].Timeout < now);
 		if (VerifyMerkleHash(leafPos, proofs, targetHash)) {
@@ -72,15 +105,7 @@ contract FakturVerifier {
 		}
 	}
 
-	function WithdrawChallenge(bytes32 targetHash) public {
-		require(Receipts[targetHash].Timeout >= now);
-		address payto = Receipts[targetHash].PayTo;
-		uint amount = Receipts[targetHash].Amount;
-		delete Receipts[targetHash];
-		payto.transfer(amount);
-	}
-
-	// To be Chainpoint 2.1 compliant
+	// To be Chainpoint 2.1 compliant TODO verify others verification system
 	function () onlyOwner public {
 		require(msg.data.length == 32);
 		bytes memory data = msg.data;
@@ -92,13 +117,34 @@ contract FakturVerifier {
 		Anchor(merkleRoot);
 	}
 
+	/*
+		@dev Timestamp function, register merkleRoots
+		@param hash, Register merkleRoot provided by Oracle
+	*/
 	function Anchor(bytes32 hash) onlyOwner public {
 		Hashs[hash] = now;
 		LastTimestamp = now;
 		emit NotifyAnchor(hash, now, msg.sender);
 	}
 
-	//TODO optimize with bitfields and bytes
+	/*
+		@dev Verify Chainpoint v2 flavor
+			Deprecated because provided hash could be part of a deeper receipt
+		      root
+		      / \
+		     /   \
+		    /     \
+		    C      D
+		   / \     |
+		   A B     h2
+		   | |
+		  h0 h1
+		 / \
+		 X Y
+		@param leafPos, Proof position on Merkle Tree (true -> right, false -> left)
+		@param proofs, hash audit path
+		@param targetHash, user generated hash
+	*/
 	function VerifyMerkleHash(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) view public returns (bool) {
 		require(leafPos.length == proofs.length);
 		// Did we anchor this ?
@@ -116,6 +162,22 @@ contract FakturVerifier {
 	}
 
 	//TODO optimize with bitfields and bytes
+	/*
+		@dev Verify rfc6962 Merkle Hash Tree with second preimage resistance
+	          root
+	          / \
+	         /   \
+	        /     \
+	       C       D
+	      / \      |
+	     A   B     h2
+	     |   |
+	    h0   h1
+	 left          right
+		@param leafPos, Proof position on Merkle Tree (true -> right, false -> left)
+		@param proofs, hash audit path
+		@param targetHash, user generated hash
+	*/
 	function VerifyRFC6962(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) view public returns (bool) {
 		require(leafPos.length == proofs.length);
 		bytes32 proofHash = sha256(byte(0x0), targetHash);
