@@ -33,7 +33,7 @@ contract FakturVerifier {
        - documentation
        - tests
     */
-    function FakturVerifier() public {
+    function pakturVerifier() public {
         OracleAddress = msg.sender;
         challengePeriod = 1 days; // SLA
         lastTimestamp = 0;
@@ -46,7 +46,7 @@ contract FakturVerifier {
         @param hash is the targetHash
         @param timestamp should be the time limit of the promise
     */
-    function ProofID(bytes32 hash, uint timestamp) pure public returns (bytes32) {
+    function proofID(bytes32 hash, uint timestamp) pure public returns (bytes32) {
         return keccak256(hash, timestamp);
     }
 
@@ -60,13 +60,13 @@ contract FakturVerifier {
         @param r, r part of the "personalSignature"
         @param s, s part of the "personalSignature"
     */
-    function ChallengeReceipt(bytes32 targetHash, uint timestamp, uint8 v , bytes32 r , bytes32 s) public payable {
+    function challengeReceipt(bytes32 targetHash, uint timestamp, uint8 v , bytes32 r , bytes32 s) public payable {
         // Verify period validity
         require(timestamp < now);
         require(msg.value >= minimalAmount);
         require(receipts[targetHash].PayTo == 0x0); // No withdrawl pending or pending deletion
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
-        bytes32 preProofID = ProofID(targetHash, timestamp);
+        bytes32 preProofID = proofID(targetHash, timestamp);
         bytes32 prefixHash = keccak256(prefix, preProofID);
         require(ecrecover(prefixHash, v, r, s) == OracleAddress);
         // Register challenge
@@ -96,9 +96,9 @@ contract FakturVerifier {
         @param proofs, hash audit path
         @param targetHash, user generated hash
     */
-    function CancelChallenge(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) onlyOwner public {
+    function cancelChallenge(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) onlyOwner public {
         require(receipts[targetHash].Timeout < now);
-        if (VerifyMerkleHash(leafPos, proofs, targetHash)) {
+        if (verifyMerkleHash(leafPos, proofs, targetHash)) {
             //Receipt exist at least by the publication of this transaction
             receipts[targetHash].Timeout = 0;
             emit ChallengeCancelled(targetHash, receipts[targetHash].PayTo);
@@ -115,14 +115,14 @@ contract FakturVerifier {
         assembly {
                 merkleRoot := mload(add(data, 32))
         }
-        Anchor(merkleRoot);
+        anchor(merkleRoot);
     }
 
     /*
         @dev Timestamp function, register merkleRoots
         @param hash, Register merkleRoot provided by Oracle
     */
-    function Anchor(bytes32 hash) onlyOwner public {
+    function anchor(bytes32 hash) onlyOwner public {
         hashs[hash] = now;
         lastTimestamp = now;
         emit NotifyAnchor(hash, now, msg.sender);
@@ -146,7 +146,7 @@ contract FakturVerifier {
         @param proofs, hash audit path
         @param targetHash, user generated hash
     */
-    function VerifyMerkleHash(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) view public returns (bool) {
+    function verifyMerkleHash(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) view public returns (bool) {
         require(leafPos.length == proofs.length);
         // Did we anchor this ?
         // targetHash == merkleRoot when tree contain only 1 element
@@ -179,7 +179,7 @@ contract FakturVerifier {
         @param proofs, hash audit path
         @param targetHash, user generated hash
     */
-    function VerifyRFC6962(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) view public returns (bool) {
+    function verifyRFC6962(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) view public returns (bool) {
         require(leafPos.length == proofs.length);
         bytes32 proofHash = sha256(byte(0x0), targetHash);
         for (uint256 j = 0; j < proofs.length; j++) {
