@@ -35,7 +35,7 @@ contract FakturVerifier {
     */
     function pakturVerifier() public {
         OracleAddress = msg.sender;
-        challengePeriod = (24*60*60)/15 // SLA
+        challengePeriod = (24*60*60)/15; // SLA // convert 1 day to number of blocks. As 1 block ~= 15 secs => (24h * 60mins * 60secs) / 15secs = 5760 blocks
         lastTimestamp = 0;
         minimalAmount = 0.1 ether;
         
