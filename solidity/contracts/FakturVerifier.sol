@@ -35,7 +35,7 @@ contract FakturVerifier {
     */
     function pakturVerifier() public {
         OracleAddress = msg.sender;
-        challengePeriod = 1 days; // SLA
+        challengePeriod = (24*60*60)/15 // SLA
         lastTimestamp = 0;
         minimalAmount = 0.1 ether;
         
