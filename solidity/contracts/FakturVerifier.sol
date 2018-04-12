@@ -18,7 +18,7 @@ contract FakturVerifier {
     event ChallengeCancelled(bytes32 hash, address whom);
 
     struct Receipt {
-        address        PayTo;
+        address     PayTo;
         uint        Amount;
         uint        Timeout;
     }
@@ -60,9 +60,9 @@ contract FakturVerifier {
         @param r, r part of the "personalSignature"
         @param s, s part of the "personalSignature"
     */
-    function challengeReceipt(bytes32 targetHash, uint timestamp, uint8 v , bytes32 r , bytes32 s) public payable {
+    function challengeReceipt(bytes32 targetHash, uint timestamp, uint8 v, bytes32 r, bytes32 s) public payable {
         // Verify period validity
-        require(timestamp < now);
+        require(timestamp < block.number);
         require(msg.value >= minimalAmount);
         require(receipts[targetHash].PayTo == 0x0); // No withdrawl pending or pending deletion
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
@@ -70,7 +70,7 @@ contract FakturVerifier {
         bytes32 prefixHash = keccak256(prefix, preProofID);
         require(ecrecover(prefixHash, v, r, s) == OracleAddress);
         // Register challenge
-        uint timeout = now + challengePeriod;
+        uint timeout = block.number + challengePeriod;
         receipts[targetHash].PayTo = msg.sender;
         receipts[targetHash].Amount = msg.value /* + calculate delta for paid anchor */;
         receipts[targetHash].Timeout = timeout;
@@ -83,7 +83,7 @@ contract FakturVerifier {
         @param targetHash, user generated hash
     */
     function withdrawChallenge(bytes32 targetHash) public {
-        require(receipts[targetHash].Timeout >= now);
+        require(receipts[targetHash].Timeout >= block.number);
         address payto = receipts[targetHash].PayTo;
         uint amount = receipts[targetHash].Amount;
         delete receipts[targetHash];
@@ -97,7 +97,7 @@ contract FakturVerifier {
         @param targetHash, user generated hash
     */
     function cancelChallenge(bool[] leafPos, bytes32[] proofs, bytes32 targetHash) onlyOwner public {
-        require(receipts[targetHash].Timeout < now);
+        require(receipts[targetHash].Timeout < block.number);
         if (verifyMerkleHash(leafPos, proofs, targetHash)) {
             //Receipt exist at least by the publication of this transaction
             receipts[targetHash].Timeout = 0;
@@ -123,9 +123,9 @@ contract FakturVerifier {
         @param hash, Register merkleRoot provided by Oracle
     */
     function anchor(bytes32 hash) onlyOwner public {
-        hashs[hash] = now;
-        lastTimestamp = now;
-        emit NotifyAnchor(hash, now, msg.sender);
+        hashs[hash] = block.number;
+        lastTimestamp = block.number;
+        emit NotifyAnchor(hash, block.number, msg.sender);
     }
 
     /*
