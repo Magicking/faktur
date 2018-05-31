@@ -1,16 +1,16 @@
 pragma solidity ^0.4.21;
 
 contract FakturVerifier {
-	address OracleAddress;
+	address public OracleAddress;
 
-	uint LastTimestamp;
-	uint ChallengePeriod;
-	uint MinimalAmount;
+	uint public LastTimestamp;
+	uint public ChallengePeriod;
+	uint public MinimalAmount;
 
 	// Merkle root
-	mapping(bytes32 => uint) Hashs;
+	mapping(bytes32 => uint) public Hashs;
 	// Hash of specific file
-	mapping(bytes32 => Receipt) Receipts;
+	mapping(bytes32 => Receipt) public Receipts;
 
 	event NotifyAnchor(bytes32 hash, uint timestamp, address oracle);
 	event Challenge(bytes32 hash, uint timestamp);
@@ -32,8 +32,10 @@ contract FakturVerifier {
 	   - documentation
 	   - tests
 	*/
-	function FakturVerifier() public {
-		OracleAddress = msg.sender;
+	function FakturVerifier(address oracle) public {
+		if (oracle == 0x0)
+			oracle = msg.sender;
+		OracleAddress = oracle;
 		ChallengePeriod = 1 days; // SLA
 		LastTimestamp = 0;
 		MinimalAmount = 0.1 ether;
