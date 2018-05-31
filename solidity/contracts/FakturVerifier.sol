@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
 contract FakturVerifier {
 	address public OracleAddress;
@@ -32,7 +32,7 @@ contract FakturVerifier {
 	   - documentation
 	   - tests
 	*/
-	function FakturVerifier(address oracle) public {
+	constructor(address oracle) public {
 		if (oracle == 0x0)
 			oracle = msg.sender;
 		OracleAddress = oracle;

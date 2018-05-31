@@ -6,7 +6,7 @@ import "../contracts/FakturVerifier.sol";
 
 contract TestFakturVerifier {
 
-  function testInitialBalanceUsingDeployedContract() {
+  function testInitialBalanceUsingDeployedContract() public {
     Assert.isTrue(true, "TODO"); // TODO
     /*
     FakturVerifier fktr = FakturVerifier(DeployedAddresses.FakturVerifier());
