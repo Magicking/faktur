@@ -40,25 +40,7 @@ After N+X period, the pre-receipt won't be challengeable anymore and is put to r
 
 Verify by calling either VerifyRFC6962 or VerifyMerkleHash Smart Contract audit function.
 
-## Receipt producer
-
- - [ ] Chainpoint2.1 based
- - [ ] OpenTimestamps
- - [ ] BlockReceipt
- - [ ] Custom
-
 ## Verification algorithm
 
  - [x] [rfc6962](https://tools.ietf.org/html/rfc6962#section-2.1.1) "Certificate transparency"
  - [x] [Merkle Tree](https://github.com/chainpoint/whitepaper/blob/master/chainpoint_white_paper.pdf) (Chainpoint 2.1, deprecated)
-
-## Backends
-
- - [ ] POST HTTP
- - [ ] Google Drive
-
-## Delivrery system
-
- - [ ] Mail
- - [ ] Sentry
- - [ ] API (SMS, ...)
